@@ -2,6 +2,9 @@ package zaplogger
 
 import "github.com/pkg/errors"
 
+const RunModeFlagName = "running.mode"
+const RunModeFlagHelp = "Running Mode,default is release. One of: [dev, debug, release]"
+
 const LevelFlagName = "log.level"
 const LevelFlagHelp = "Log level, default is info. One of: [debug, info, warn, error]"
 
