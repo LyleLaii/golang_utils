@@ -56,7 +56,7 @@ func ConfigZap(serverName string, runConf *RunningConfig) zap.Config {
 		dev = true
 	}
 
-	logFile := "./logs/alertmanager_notifier.log"
+	logFile := fmt.Sprintf("./logs/%v.log", serverName)
 
 	ll := lumberjack.Logger{
 		Filename:   logFile,
