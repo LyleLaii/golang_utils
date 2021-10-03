@@ -2,6 +2,15 @@ package zaplogger
 
 import "github.com/pkg/errors"
 
+const LevelFlagName = "log.level"
+const LevelFlagHelp = "Log level, default is info. One of: [debug, info, warn, error]"
+
+const LogMaxBackupsFlagName = "log.max-backups"
+const LogMaxBackupsFlagHelp = "The maximum number of old log files to retain. Default is 5."
+
+const LogMaxDaysFlagName = "log.max-days"
+const LogMaxDaysFlagHelp = "The maximum number of days to retain old log files. Default is 30"
+
 type Level int
 
 const (
