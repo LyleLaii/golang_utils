@@ -1,2 +1,4 @@
 .idea
 logger/*/*/logs
+requestes/*/testfile
+requestes/*/*_test.go
