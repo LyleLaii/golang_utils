@@ -73,16 +73,16 @@ func (r *RunMode) Set(s string) error {
 }
 
 type RunningConfig struct {
-	Level *LogLevel
-	RunMode *RunMode
+	Level      *LogLevel
+	RunMode    *RunMode
 	MaxBackups int
-	MaxDays int
+	MaxDays    int
 }
 
-func NewRunConf(level string, mode string) *RunningConfig {
+func NewRunConf(level, mode string, maxdays, maxbackups int) *RunningConfig {
 	c := &RunningConfig{}
-	c.MaxDays = 1
-	c.MaxBackups = 1
+	c.MaxDays = maxdays
+	c.MaxBackups = maxbackups
 	c.Level = &LogLevel{}
 	c.Level.Set(level)
 	c.RunMode = &RunMode{}
