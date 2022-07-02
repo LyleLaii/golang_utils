@@ -6,11 +6,12 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"reflect"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 type RequestsConfig struct {
@@ -30,19 +31,19 @@ type ExtraConfig func(r *http.Request)
 type PostData func(url string) (*http.Request, error)
 
 type ResponseData struct {
-	status string
-	statusCode int
-	header map[string][]string
-	data []byte
+	Status     string
+	StatusCode int
+	Header     map[string][]string
+	Data       []byte
 	//data string
 }
 
 func (rsp ResponseData) Text() string {
-	return string(rsp.data[:])
+	return string(rsp.Data[:])
 }
 
 func (rsp ResponseData) BindJSON(obj interface{}) error {
-	if err := json.Unmarshal(rsp.data, obj); err != nil {
+	if err := json.Unmarshal(rsp.Data, obj); err != nil {
 		return err
 	}
 	return nil
@@ -68,14 +69,14 @@ func New(c RequestsConfig) (*RequestsClient, error) {
 		if err != nil {
 			return &RequestsClient{}, errors.Wrap(err, "load x509 key pair failed")
 		}
-	    Certificates = []tls.Certificate{cliCrt}
+		Certificates = []tls.Certificate{cliCrt}
 	}
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: !c.VerifyTLS,
-			RootCAs:      pool,
-			Certificates: Certificates,
+			RootCAs:            pool,
+			Certificates:       Certificates,
 		},
 	}
 
@@ -132,13 +133,13 @@ func AddQueryParam(data interface{}) ExtraConfig {
 }
 
 func FormData(data map[string]string) PostData {
-    add := func(url string) (*http.Request, error) {
+	add := func(url string) (*http.Request, error) {
 
 		list := make([]string, 0)
 		for k, v := range data {
 			list = append(list, fmt.Sprintf("%s=%s", k, fmt.Sprint(v)))
 		}
-		data :=strings.Join(list, "&")
+		data := strings.Join(list, "&")
 
 		req, err := http.NewRequest("POST", url, strings.NewReader(data))
 		if err != nil {
@@ -155,7 +156,7 @@ func FormData(data map[string]string) PostData {
 
 func JsonData(data interface{}) PostData {
 	add := func(url string) (*http.Request, error) {
-		b ,err := json.Marshal(data)
+		b, err := json.Marshal(data)
 		if err != nil {
 			return &http.Request{}, errors.Wrap(err, "json format error")
 		}
@@ -183,10 +184,10 @@ func generateRepData(resp *http.Response) (ResponseData, error) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return ResponseData{status: status, statusCode: statusCode, header: headers, data: nil}, errors.Wrap(err, "read response data failed")
+		return ResponseData{Status: status, StatusCode: statusCode, Header: headers, Data: nil}, errors.Wrap(err, "read response data failed")
 	}
 
-	return ResponseData{status: status, statusCode: statusCode, header: headers, data: body}, nil
+	return ResponseData{Status: status, StatusCode: statusCode, Header: headers, Data: body}, nil
 }
 
 func (r *RequestsClient) Get(url string, extraConfigs ...ExtraConfig) (ResponseData, error) {
