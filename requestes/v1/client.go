@@ -187,11 +187,11 @@ func MultiFormData(data FormDataBody) PostData {
 	add := func(url string) (*http.Request, error) {
 		buf := new(bytes.Buffer)
 		bw := multipart.NewWriter(buf)
-		for k, v := range data.value {
+		for k, v := range data.Value {
 			d, _ := bw.CreateFormField(k)
 			d.Write([]byte(v))
 		}
-		for k, v := range data.file {
+		for k, v := range data.File {
 			f, _ := bw.CreateFormFile(k, v.FileName)
 			reader := bytes.NewReader(v.FileContent)
 			io.Copy(f, reader)
