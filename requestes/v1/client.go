@@ -6,7 +6,9 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"reflect"
 	"strings"
@@ -27,6 +29,15 @@ type RequestsClient struct {
 }
 
 type ExtraConfig func(r *http.Request)
+
+type File struct {
+	FileName    string
+	FileContent []byte
+}
+type FormDataBody struct {
+	value map[string]string
+	file  map[string]File
+}
 
 type PostData func(url string) (*http.Request, error)
 
@@ -172,6 +183,30 @@ func JsonData(data interface{}) PostData {
 	return add
 }
 
+func MultiFormData(data FormDataBody) PostData {
+	add := func(url string) (*http.Request, error) {
+		buf := new(bytes.Buffer)
+		bw := multipart.NewWriter(buf)
+		for k, v := range data.value {
+			d, _ := bw.CreateFormField(k)
+			d.Write([]byte(v))
+		}
+		for k, v := range data.file {
+			f, _ := bw.CreateFormFile(k, v.FileName)
+			reader := bytes.NewReader(v.FileContent)
+			io.Copy(f, reader)
+		}
+		bw.Close()
+		req, err := http.NewRequest("POST", url, buf)
+		if err != nil {
+			return &http.Request{}, errors.Wrap(err, "Gen PostFormData failed")
+		}
+		req.Header.Add("Content-Type", bw.FormDataContentType())
+		return req, nil
+	}
+	return add
+}
+
 func generateRepData(resp *http.Response) (ResponseData, error) {
 	status := resp.Status
 	statusCode := resp.StatusCode
@@ -212,6 +247,24 @@ func (r *RequestsClient) Get(url string, extraConfigs ...ExtraConfig) (ResponseD
 
 func (r *RequestsClient) Post(url string, postData PostData, extraConfigs ...ExtraConfig) (ResponseData, error) {
 	req, err := postData(url)
+	if err != nil {
+		return ResponseData{}, errors.Wrap(err, "post method create request failed")
+	}
+	for _, extraConfig := range extraConfigs {
+		extraConfig(req)
+	}
+
+	resp, err := r.client.Do(req)
+
+	if err != nil {
+		return ResponseData{}, errors.Wrap(err, "http do post failed")
+	}
+
+	return generateRepData(resp)
+}
+
+func (r *RequestsClient) PostFormData(url string, MultiFormData PostData, extraConfigs ...ExtraConfig) (ResponseData, error) {
+	req, err := MultiFormData(url)
 	if err != nil {
 		return ResponseData{}, errors.Wrap(err, "post method create request failed")
 	}
