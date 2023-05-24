@@ -35,8 +35,8 @@ type File struct {
 	FileContent []byte
 }
 type FormDataBody struct {
-	value map[string]string
-	file  map[string]File
+	Value map[string]string
+	File  map[string]File
 }
 
 type PostData func(url string) (*http.Request, error)
